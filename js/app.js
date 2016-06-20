@@ -4,7 +4,23 @@ $("#menu-toggle").click(function(e) {
     $("#wrapper").toggleClass("toggled");
 });
 
+// Change text of toggle button
+// http://jsfiddle.net/dFZyv/
+$(".pushme").click(function() {
+    $(this).text(function(i, v) {
+        return v === 'Show Sidebar' ? 'Hide Sidebar' : 'Show Sidebar';
+    });
+});
+
 var map;
+
+function toggleBounce() {
+    if (this.marker.getAnimation() !== null) {
+        this.marker.setAnimation(null);
+    } else {
+        this.marker.setAnimation(google.maps.Animation.BOUNCE);
+    }
+}
 
 // Add name to function for easier debugging
 var VenueObject = function VenueObject(venue) {
@@ -14,7 +30,12 @@ var VenueObject = function VenueObject(venue) {
     this.lng = venue.location.lng;
     this.foodType = venue.categories[0].name;
     this.address = venue.location.formattedAddress.join(", ");
-    this.phone = venue.contact.formattedPhone;
+    this.phone;
+    if (venue.contact.formattedPhone === undefined) {
+        self.phone = "<i>Phone Not Provided</i>";
+    } else {
+        self.phone = venue.contact.formattedPhone;
+    }
     this.venueURL = venue.url;
     this.venueRating = venue.rating;
     this.visible = ko.observable(true);
@@ -23,7 +44,8 @@ var VenueObject = function VenueObject(venue) {
     this.marker = new google.maps.Marker({
         position: new google.maps.LatLng(self.lat, self.lng),
         map: map,
-        title: self.name
+        title: self.name,
+        animation: google.maps.Animation.DROP
     });
 
     // Show the map marker for this restaurant object
@@ -44,8 +66,18 @@ var VenueObject = function VenueObject(venue) {
 };
 
 // API call to Foursquare to retreive venue data
+// Error Handling: http://stackoverflow.com/questions/1740218/error-handling-in-getjson-calls
 var get4Square = function(callback) {
-    $.getJSON("https://api.foursquare.com/v2/venues/explore?ll=40.742641,-73.982462&limit=25&section=food&oauth_token=CC2VGZMOFO0FXFN1V2A0AWLXEWZQDK1153NMCI4XHBS10HIC&v=20160508", callback);
+    $.getJSON("https://api.foursquare.com/v2/venues/explore?ll=40.742641,-73.982462&limit=25&section=food&oauth_token=CC2VGZMOFO0FXFN1V2A0AWLXEWZQDK1153NMCI4XHBS10HIC&v=20160508", callback, function(data) {})
+        .done(function() {
+            console.log('getJSON request succeeded!');
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert('getJSON request failed! ' + textStatus);
+        })
+        .always(function() {
+            console.log('getJSON request ended!');
+        });
 };
 
 // Function to limit binding field length in sidebar
@@ -63,7 +95,6 @@ ko.bindingHandlers.truncatedText = {
     }
 };
 
-
 // The ViewModel represents the data and operations on a UI
 function AppViewModel() {
     var self = this;
@@ -78,6 +109,10 @@ function AppViewModel() {
                 });
                 // Show info window
                 newVenue.infoWindow.open(map, this);
+                newVenue.marker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(function() {
+                    newVenue.marker.setAnimation(null);
+                }, 2000);
             });
         });
     });
@@ -101,11 +136,21 @@ function AppViewModel() {
     }, self);
 
     // Close all infoWindows and open only the one clicked
+    // https://developers.google.com/maps/documentation/javascript/examples/marker-animations
     this.showVenue = function(venue) {
         self.locationList().forEach(function(item) {
             item.infoWindow.close();
         });
         google.maps.event.trigger(venue.marker, 'click');
+        venue.marker.addListener('click', toggleBounce);
+
+        function toggleBounce() {
+            if (venue.marker.getAnimation() !== null) {
+                venue.marker.setAnimation(null);
+            } else {
+                venue.marker.setAnimation(google.maps.Animation.BOUNCE);
+            }
+        }
     };
 
     // Load locations from Foursqaure and create VenueObjects from the data
@@ -114,7 +159,7 @@ function AppViewModel() {
             return new VenueObject(fsVenue.venue);
         });
         self.locationList(venues);
-        //console.log(self.locationList());
+        //console.log(self.locationList()[24].phone);
     });
 
     // Callback that initializes the Google Map object 

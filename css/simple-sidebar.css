@@ -82,7 +82,7 @@
 }
 
 .sidebar-nav > .sidebar-brand {
-    height: 65px;
+	height: 65px;
     font-size: 18px;
     line-height: 60px;
 }
@@ -121,5 +121,11 @@
     #wrapper.toggled #page-content-wrapper {
         position: relative;
         margin-right: 0;
+    }
+}
+
+@media(max-width:768px) {
+.sidebar-nav {
+    top: 180px;
     }
 }

@@ -1,32 +1,32 @@
 /* START CUSTOM CSS */
 
 #map {
-    top: 55px;
-    width: 88vw; 
-    height: 97vh;
-    position: absolute;
+    top : 55px;
+    width : 88vw;
+    height : 97vh;
+    position : absolute;
 }
 
 #title {
-    opacity: 1;
-    position: absolute;
+    opacity : 1;
+    position : absolute;
 }
 
 label {
-	color: white;
-	font-size: 14px;
+    color : white;
+    font-size : 14px;
 }
 
 .sidebar-nav > .sidebar-brand {
-    color: white;
-    max-width:93%;
-    white-space:nowrap;
-    overflow:hidden;
-    border:1px solid red
+    color : white;
+    max-width : 93%;
+    white-space : nowrap;
+    overflow : hidden;
+    border : red solid 1px;
 }
 
 .info-window-content {
-	text-align: center;
+    text-align : center;
 }
 
 /* END CUSTOM CSS */
